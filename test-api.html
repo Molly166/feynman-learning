@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API测试页面</h1>
+        
+        <h2>测试注册API</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label>用户名:</label>
+                <input type="text" id="username" value="testuser" required>
+            </div>
+            <div class="form-group">
+                <label>邮箱:</label>
+                <input type="email" id="email" value="test@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>密码:</label>
+                <input type="password" id="password" value="123456" required>
+            </div>
+            <button type="submit">测试注册</button>
+        </form>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '正在发送请求...';
+            
+            try {
+                console.log('发送注册请求:', { username, email, password });
+                
+                const response = await fetch('http://localhost:3000/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                console.log('响应状态:', response.status);
+                console.log('响应头:', response.headers);
+                
+                const data = await response.json();
+                console.log('响应数据:', data);
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 注册成功！</h3>
+                        <p><strong>消息:</strong> ${data.msg}</p>
+                        <p><strong>用户ID:</strong> ${data.user.id}</p>
+                        <p><strong>用户名:</strong> ${data.user.username}</p>
+                        <p><strong>邮箱:</strong> ${data.user.email}</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ 注册失败</h3>
+                        <p><strong>状态码:</strong> ${response.status}</p>
+                        <p><strong>错误信息:</strong> ${data.msg || '未知错误'}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('请求错误:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ 请求失败</h3>
+                    <p><strong>错误:</strong> ${error.message}</p>
+                    <p><strong>类型:</strong> ${error.name}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

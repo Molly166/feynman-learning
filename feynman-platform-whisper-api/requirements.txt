@@ -1,0 +1,5 @@
+flask==2.3.3
+openai-whisper
+torch
+torchaudio
+opencc-python-reimplemented
