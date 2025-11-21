@@ -15,7 +15,14 @@ export function AuthProvider({ children }) {
             setLoading(true);
             apiClient.get('/users/me')
                 .then(res => setUser(res.data))
-                .catch(() => setUser(null))
+                .catch((err) => {
+                    const status = err?.response?.status;
+                    if (status === 401) {
+                        // token失效，自动登出以避免重复401
+                        setToken(null);
+                    }
+                    setUser(null);
+                })
                 .finally(() => setLoading(false));
         } else {
             localStorage.removeItem('token');

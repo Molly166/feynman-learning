@@ -18,6 +18,12 @@ Feynman 学习平台是一个基于费曼学习法理念构建的智能学习管
 - 📝 **AI文本润色**: 多种风格的专业文本润色
 - 🎯 **AI智能出题**: 自动生成单选题和简答题，三种难度可选
 - ✅ **自动复习标记**: 智能识别薄弱知识点，自动加入复习列表
+- 📚 **RAG 知识库问答**：LangChain + 百度千帆 embedding + 本地 HNSWLib，支持私有知识库检索增强生成
+- 🗺️ **知识图谱可视化**：ECharts 力导图展示知识点引用关系
+- 🪐 **3D 知识宇宙**：Three.js + d3-force-3d 构建可交互的 3D 星图
+- 💬 **AI Agent 聊天界面**：面向知识库的 Agent 页面，支持问答与错误提示
+- 💻 **Electron 桌面端**：一键打包为 Windows/macOS 桌面应用
+- 📲 **PWA**：支持安装到桌面 / 手机主屏、基础离线访问
 - 🌏 **多语言支持**: 中英文界面切换
 - 🔒 **安全认证**: JWT Token认证，密码加密存储
 - 📱 **响应式设计**: 现代化的UI设计，适配各种屏幕
@@ -27,26 +33,30 @@ Feynman 学习平台是一个基于费曼学习法理念构建的智能学习管
 ## 🛠️ 技术栈
 
 ### 后端
-- **运行时**: Node.js
+- **运行时**: Node.js 18+
 - **框架**: Express.js
 - **数据库**: MongoDB + Mongoose
 - **认证**: JWT (jsonwebtoken)
 - **加密**: bcryptjs
 - **文件上传**: Multer
-- **AI能力**: DeepSeek API / 硅基流动 API
+- **AI/RAG**: LangChain.js、@langchain/community、@langchain/baidu-qianfan、hnswlib-node
 
 ### 前端
 - **框架**: React 18.3.1
-- **构建工具**: Vite 7
+- **构建工具**: Vite 5.4 (同时兼容 Electron / PWA)
 - **路由**: React Router DOM 7
-- **样式**: TailwindCSS 3.4
+- **状态/上下文**: React Context、自定义 hooks
+- **样式**: TailwindCSS 3.4 + 自定义 CSS
+- **图形可视化**: ECharts 5、Three.js 0.172、d3-force-3d 3.x
 - **富文本**: React-Quill 2.0
 - **国际化**: react-i18next 16.2
 - **HTTP客户端**: Axios 1.12
+- **跨平台**: Electron 31 + electron-builder 25、vite-plugin-pwa 0.20
 
-### AI服务
-- **语音识别**: OpenAI Whisper (自部署)
-- **文本处理**: DeepSeek Chat API / 硅基流动 API
+### AI/PWA/语音服务
+- **语音识别**: OpenAI Whisper (自部署 Flask 服务)
+- **文本处理**: DeepSeek Chat API（主）、硅基流动 API（备）
+- **Embedding**: 百度千帆 Embedding API
 
 ---
 
@@ -64,16 +74,22 @@ FeynmanLearning/
 │   │   ├── context/               # React Context
 │   │   │   └── AuthContext.jsx    # 认证上下文
 │   │   ├── pages/                 # 页面组件
-│   │   │   ├── DashboardPage.jsx  # 主页
-│   │   │   ├── LoginPage.jsx      # 登录页
-│   │   │   ├── RegisterPage.jsx   # 注册页
-│   │   │   ├── KnowledgePointFormPage.jsx  # 知识点表单
-│   │   │   ├── VoiceLearningPage.jsx       # 语音学习
-│   │   │   ├── QuizPage.jsx                # 答题页面
-│   │   │   └── WelcomePage.jsx             # 欢迎页
+│   │   │   ├── DashboardPage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── RegisterPage.jsx
+│   │   │   ├── KnowledgePointFormPage.jsx
+│   │   │   ├── VoiceLearningPage.jsx
+│   │   │   ├── QuizPage.jsx
+│   │   │   ├── AgentPage.jsx              # AI 知识库助手
+│   │   │   ├── GraphPage.jsx              # 2D 知识图谱
+│   │   │   ├── ThreeJSPage.jsx            # Three.js 场景
+│   │   │   └── KnowledgeUniversePage.jsx  # 3D 力导向知识宇宙
 │   │   ├── i18n.js                # 国际化配置
 │   │   └── App.jsx                 # 根组件
 │   └── package.json
+│
+├── services/                      # 后端服务模块
+│   └── vectorStoreService.js      # RAG 向量化与检索
 │
 ├── feynman-platform-whisper-api/  # Whisper语音识别服务
 │   ├── app.py                      # Flask应用
@@ -89,10 +105,11 @@ FeynmanLearning/
 │   └── KnowledgePoint.js           # 知识点模型
 │
 ├── routes/                         # API路由
-│   ├── users.js                    # 用户路由
-│   ├── knowledgePoints.js           # 知识点路由
-│   ├── audio.js                    # 音频路由
-│   └── ai.js                       # AI功能路由
+│   ├── users.js
+│   ├── knowledgePoints.js
+│   ├── audio.js
+│   ├── ai.js                       # AI功能 + RAG 问答
+│   └── graph.js                    # 知识图谱数据
 │
 ├── middleware/                     # 中间件
 │   └── auth.js                     # JWT认证中间件
@@ -102,6 +119,7 @@ FeynmanLearning/
 │
 ├── index.js                        # 后端入口文件
 ├── package.json                    # 后端依赖
+├── vector_store/                   # HNSWLib 索引（运行后生成）
 └── .env                            # 环境变量配置（需要创建）
 ```
 
@@ -111,7 +129,7 @@ FeynmanLearning/
 
 ### 环境要求
 
-- **Node.js**: >= 16.0.0
+- **Node.js**: >= 18.0.0
 - **Python**: >= 3.8 (用于Whisper服务)
 - **MongoDB**: 本地或MongoDB Atlas云数据库
 - **npm** 或 **yarn**
@@ -130,6 +148,9 @@ cd FeynmanLearning
 ```bash
 # 安装后端依赖
 npm install
+
+# 启用 RAG 向量索引所需依赖（若已安装会自动跳过）
+npm install langchain @langchain/community @langchain/baidu-qianfan hnswlib-node
 
 # 创建 .env 文件
 cp .env.example .env  # 如果存在，或手动创建
@@ -155,6 +176,10 @@ DEEPSEEK_API_KEY=sk-cd94c509e83447b68f81c0e087da9a56
 
 # 硅基流动API配置（备用，可选）
 SILICONFLOW_API_KEY=your_siliconflow_api_key_here
+
+# 百度千帆Embedding API（RAG向量化必需）
+QIANFAN_API_KEY=your_qianfan_api_key
+QIANFAN_SECRET_KEY=your_qianfan_secret_key
 ```
 
 #### 3. 前端配置
@@ -200,7 +225,7 @@ npm run dev
 
 **预期输出**:
 ```
-  VITE v7.1.7  ready in 1234 ms
+  VITE v5.4.10  ready in XXXX ms
   ➜  Local:   http://localhost:5173/
 ```
 
@@ -224,6 +249,48 @@ python app.py
 
 1. **双击 `启动项目.bat`** - 自动启动后端和前端服务
 2. **双击 `启动Whisper.bat`** - 启动语音识别服务（可选）
+
+### 方法三：Electron 桌面应用
+
+> 需在 `feynman-platform-frontend` 目录先运行 `npm install` 安装 Electron 相关依赖。
+
+```bash
+# 桌面端开发调试（会同时启动 Vite + Electron 窗口）
+cd feynman-platform-frontend
+npm run electron:dev
+
+# 生成桌面应用安装包（Windows .exe / macOS .dmg）
+npm run electron:build
+# 打包完成后的文件位于 feynman-platform-frontend/release/
+```
+
+### 方法四：PWA（渐进式 Web App）
+
+1. 构建产物
+   ```bash
+   cd feynman-platform-frontend
+   npm run build
+   npx serve -s dist
+   ```
+2. 打开 `http://localhost:3000`（或 serve 提示的地址），在浏览器地址栏点击“安装”。
+3. Chrome DevTools → Application → Service Workers 可查看 `sw.js` 状态，Network 面板勾选 *Offline* 后刷新验证离线缓存。
+4. 在手机浏览器访问同一局域网地址，即可“添加到主屏幕”获得类原生体验。
+
+### 方法五：Docker 一键部署
+
+1. 准备 `.env`（位于项目根目录，供后端使用）。Docker Compose 会自动挂载 `vector_store/` 目录以保存向量索引。
+2. 首次构建与启动：
+   ```bash
+   docker-compose up -d --build
+   ```
+3. 服务访问：
+   - 后端 API: `http://localhost:3000/api`
+   - 前端（含代理）: `http://localhost:4173`
+4. 停止与清理：
+   ```bash
+   docker-compose down
+   ```
+5. 如需自定义前端在构建时访问的 API 地址，可在 `docker-compose.yml` -> `frontend.build.args.VITE_API_BASE_URL` 处修改；非容器环境可在构建前设置 `VITE_API_BASE_URL`，或在部署后通过为 `window.__APP_API_BASE__` 赋值来覆盖。
 
 ---
 
@@ -459,6 +526,40 @@ Content-Type: application/json
 }
 ```
 
+#### RAG 知识库问答
+```http
+POST /api/ai/rag-qa
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "question": "React Hooks 的优势是什么？"
+}
+
+响应:
+{
+  "answer": "基于知识库检索到的上下文生成的回答，若无匹配将提示无法回答。"
+}
+```
+
+### 知识图谱 / 可视化 API
+
+#### 获取知识图谱数据
+```http
+GET /api/graph/knowledge-map
+Authorization: Bearer <token>
+
+响应:
+{
+  "nodes": [
+    { "id": "kp1", "name": "React Hooks", "symbolSize": 28, "status": "mastered", "reviewList": false, "value": "内容摘要" }
+  ],
+  "links": [
+    { "source": "kp1", "target": "kp2", "label": { "show": true, "formatter": "引用" } }
+  ]
+}
+```
+
 ### 音频处理 API
 
 #### 语音转录
@@ -572,6 +673,18 @@ MONGO_URI=mongodb://localhost:27017/feynman_learning
 
 > **注意**: 项目默认使用DeepSeek作为主用服务，硅基流动作为备用服务。
 
+#### 百度千帆 Embedding API（RAG向量服务必需）
+1. 访问 [百度智能云控制台](https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application) 创建应用。
+2. 复制 `API Key` 与 `Secret Key`。
+3. 配置到 `.env`：
+   ```env
+   QIANFAN_API_KEY=your_qianfan_api_key
+   QIANFAN_SECRET_KEY=your_qianfan_secret_key
+   ```
+4. 首次运行会在项目根目录自动生成 `vector_store/` 文件夹，用于存储本地向量索引，请勿手动修改其中内容。
+
+> **提示**: 若遇到“每日请求次数上限”错误，请在百度千帆控制台查看用量或更换更高配额的密钥。
+
 ---
 
 ## 🐛 常见问题
@@ -648,10 +761,16 @@ MONGO_URI=mongodb://localhost:27017/feynman_learning
 - AI评价低于60分自动标记
 - Dashboard可视化复习提醒
 
-### 4. 现代化技术栈
-- React 18 + Vite 7 快速构建
-- TailwindCSS 现代化UI
-- TypeScript支持（可选）
+### 4. 私有向量知识库（RAG）
+- 使用 LangChain.js + HNSWLib 构建本地向量索引
+- 知识点创建/更新时自动切分、嵌入并写入 `vector_store`
+- 接入百度千帆 Embedding API，保障中文语义向量效果
+- 为后续的检索式问答和 Agent 能力提供数据基础
+
+### 5. 立体可视化 + 跨平台
+- ECharts 力导图 + Three.js + d3-force-3d 打造二维/三维知识网络
+- Electron 桌面端、PWA 移动端，一次开发多端部署
+- React 18 + Vite 5 + TailwindCSS 高效开发体验
 
 ---
 

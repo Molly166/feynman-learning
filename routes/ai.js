@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const { polishText, evaluateText, evaluateFeynmanAttempt, generateQuestion, gradeAnswer } = require('../controllers/aiController');
+const { answerWithRAG } = require('../controllers/baiduAiController');
 
 // 文本润色
 router.post('/polish', auth, polishText);
@@ -17,6 +18,9 @@ router.post('/generate-question', auth, generateQuestion);
 
 // AI评分答案（用于简答题）
 router.post('/grade-answer', auth, gradeAnswer);
+
+// RAG问答（基于知识库的智能问答）
+router.post('/rag-qa', auth, answerWithRAG);
 
 module.exports = router;
 

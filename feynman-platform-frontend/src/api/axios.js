@@ -1,8 +1,15 @@
 // src/api/axios.js
 import axios from 'axios';
 
+const getBaseUrl = () => {
+    if (typeof window !== 'undefined' && window.__APP_API_BASE__) {
+        return window.__APP_API_BASE__;
+    }
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+};
+
 const apiClient = axios.create({
-    baseURL: 'http://localhost:3000/api', // 后端API的基础路径
+    baseURL: getBaseUrl(),
     headers: {
         'Content-Type': 'application/json',
     },

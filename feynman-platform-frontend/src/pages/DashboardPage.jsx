@@ -16,21 +16,36 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!user) {
+      setKnowledgePoints([]);
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
     const fetchKnowledgePoints = async () => {
       try {
         setLoading(true);
-        const response = await apiClient.get('/knowledge-points');
+        const response = await apiClient.get('/knowledge-points', {
+          signal: controller.signal,
+        });
         setKnowledgePoints(response.data);
+        setError('');
       } catch (err) {
-        setError('获取知识点失败');
+        if (controller.signal.aborted) return;
+        setError(err?.response?.status === 401 ? '登录已过期，请重新登录' : '获取知识点失败');
         console.error(err);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchKnowledgePoints();
-  }, []);
+
+    return () => controller.abort();
+  }, [user]);
 
   const handleDelete = async (id) => {
     if (window.confirm('你确定要删除这个知识点吗？')) {

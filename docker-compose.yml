@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+    container_name: feynman-backend
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./vector_store:/app/vector_store
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./feynman-platform-frontend
+      args:
+        - VITE_API_BASE_URL=/api
+    container_name: feynman-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4173:80"
+    restart: unless-stopped
+

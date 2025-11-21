@@ -1,2 +1,4 @@
 .env
 mode_modules/
+node_modules/
+vector_store/

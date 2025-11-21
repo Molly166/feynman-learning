@@ -1,0 +1,12 @@
+.env
+node_modules
+vector_store
+*.log
+Dockerfile
+docker-compose.yml
+.git
+.gitignore
+feynman-platform-frontend/node_modules
+feynman-platform-frontend/dist
+feynman-platform-whisper-api/__pycache__
+

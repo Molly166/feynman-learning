@@ -1,10 +1,12 @@
 // src/components/Layout.jsx
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 
 export default function Layout() {
   const location = useLocation();
   const { i18n } = useTranslation();
+  const { token } = useAuth();
   
   const isActive = (path) => location.pathname === path;
 
@@ -23,36 +25,90 @@ export default function Layout() {
               </h1>
             </div>
             <nav className="flex space-x-6">
-              <Link 
-                to="/" 
-                className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                  isActive('/') 
-                    ? 'bg-white text-blue-600 shadow-md' 
-                    : 'hover:bg-blue-500 hover:shadow-md'
-                }`}
-              >
-                主页
-              </Link>
-              <Link 
-                to="/login" 
-                className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                  isActive('/login') 
-                    ? 'bg-white text-blue-600 shadow-md' 
-                    : 'hover:bg-blue-500 hover:shadow-md'
-                }`}
-              >
-                登录
-              </Link>
-              <Link 
-                to="/register" 
-                className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                  isActive('/register') 
-                    ? 'bg-white text-blue-600 shadow-md' 
-                    : 'hover:bg-blue-500 hover:shadow-md'
-                }`}
-              >
-                注册
-              </Link>
+              {token && (
+                <Link 
+                  to="/" 
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    isActive('/') 
+                      ? 'bg-white text-blue-600 shadow-md' 
+                      : 'hover:bg-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  主页
+                </Link>
+              )}
+              {token && (
+                <Link 
+                  to="/agent" 
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    isActive('/agent') 
+                      ? 'bg-white text-blue-600 shadow-md' 
+                      : 'hover:bg-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  AI助手
+                </Link>
+              )}
+              {token && (
+                <Link 
+                  to="/graph" 
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    isActive('/graph') 
+                      ? 'bg-white text-blue-600 shadow-md' 
+                      : 'hover:bg-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  知识图谱
+                </Link>
+              )}
+              {token && (
+                <Link 
+                  to="/3d-world" 
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    isActive('/3d-world') 
+                      ? 'bg-white text-blue-600 shadow-md' 
+                      : 'hover:bg-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  3D视界
+                </Link>
+              )}
+              {token && (
+                <Link 
+                  to="/knowledge-universe" 
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    isActive('/knowledge-universe') 
+                      ? 'bg-white text-blue-600 shadow-md' 
+                      : 'hover:bg-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  知识宇宙
+                </Link>
+              )}
+              {!token && (
+                <Link 
+                  to="/login" 
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    isActive('/login') 
+                      ? 'bg-white text-blue-600 shadow-md' 
+                      : 'hover:bg-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  登录
+                </Link>
+              )}
+              {!token && (
+                <Link 
+                  to="/register" 
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    isActive('/register') 
+                      ? 'bg-white text-blue-600 shadow-md' 
+                      : 'hover:bg-blue-500 hover:shadow-md'
+                  }`}
+                >
+                  注册
+                </Link>
+              )}
             </nav>
           </div>
         </div>
