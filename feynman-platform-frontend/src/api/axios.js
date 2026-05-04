@@ -1,10 +1,38 @@
 // src/api/axios.js
 import axios from 'axios';
 
+const QUERY_API_BASE_KEY = 'apiBase';
+const STORAGE_API_BASE_KEY = 'feynman_app_api_base';
+
+const getQueryApiBase = () => {
+    if (typeof window === 'undefined') {
+        return '';
+    }
+
+    const queryApiBase = new URLSearchParams(window.location.search).get(QUERY_API_BASE_KEY) || '';
+    if (queryApiBase) {
+        window.localStorage.setItem(STORAGE_API_BASE_KEY, queryApiBase);
+    }
+    return queryApiBase;
+};
+
 const getBaseUrl = () => {
     if (typeof window !== 'undefined' && window.__APP_API_BASE__) {
         return window.__APP_API_BASE__;
     }
+
+    const queryApiBase = getQueryApiBase();
+    if (queryApiBase) {
+        return queryApiBase;
+    }
+
+    if (typeof window !== 'undefined') {
+        const savedApiBase = window.localStorage.getItem(STORAGE_API_BASE_KEY);
+        if (savedApiBase) {
+            return savedApiBase;
+        }
+    }
+
     return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 };
 
